@@ -1,5 +1,8 @@
+import os
+import tempfile
 from subprocess import call
-from miwlogger import logger
+from miwlib.miwlogger import logger
+from miwlib import json2pb
 #import re
 
 # beware if a key is also a value
@@ -24,10 +27,22 @@ class MIWJob:
         #print miw_options.keys()
         #pattern = re.compile(r'\b(' + '|'.join(re.escape(key) for key in miw_options.keys()) + r')\b')
         #local_command = pattern.sub(lambda x: miw_options[x.group()], self.miw_command)
+
+        created_tmp = False
+        if '$format_files_repo' in miw_options and '$logfile' in miw_options:
+            if not os.path.isfile(miw_options['$format_files_repo'] + '/' + miw_options['$logfile'] + '.fmt'):
+                temp_fmt = tempfile.mktemp('.fmt')
+                json2pb.json2pb(miw_options['$format_files_repo'] + '/' + miw_options['$logfile'] + '.json', temp_fmt)
+                miw_options['$format_files_repo'] = os.path.dirname(temp_fmt)
+                miw_options['$logfile'] = os.path.splitext(os.path.basename(temp_fmt))[0]
+                created_tmp = True
+        
         local_command = multi_replace(self.miw_command,miw_options)
         #print 'local_command=',local_command
         logger.debug("MIW job command=%s" % (local_command))
         call_output = call(self.miw_loc + '/miw ' + local_command,shell=True)
+        if created_tmp:
+            os.remove(temp_fmt)
         if call_output == 0:
             logger.debug('Successfully MIW job %s' % (local_command))
         else:

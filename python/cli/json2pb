@@ -1,0 +1,11 @@
+#!/usr/bin/env python2
+import os, sys
+from pprint import pprint
+from miwlib import json2pb
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print "Usage: " + sys.argv[0] + " <json file in> <pb file out>"
+        exit()
+
+    json2pb.json2pb(sys.argv[1], sys.argv[2])

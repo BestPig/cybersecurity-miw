@@ -1,1 +1,1 @@
-SUBDIRS = miw metis app tests
+SUBDIRS = miw metis app tests python
