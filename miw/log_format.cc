@@ -33,6 +33,7 @@
 #include <time.h>
 #include <boost/network/uri.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 #include "str_utils.h"
 #include <glog/logging.h>
 
@@ -295,9 +296,12 @@ namespace miw
 		    LOG(INFO) << "Reading file " << f->mutable_match()->match_file()
 			      << " for field " << f->name() << std::endl;
 		    std::string mstr;
-		    while (infile >> mstr)
+		    while (getline(infile, mstr))
 		      {
-			matches_str->insert(mstr);
+			boost::trim_right(mstr);
+			if (mstr.length() != 0) {
+			  matches_str->insert(mstr);
+			}
 		      }
 		    matches_str->rehash(matches_str->size());
 		    _match_file_fields.insert(std::make_pair(f->name(),matches_str));
@@ -340,29 +344,33 @@ namespace miw
 		// reverse linear-time lookup if not exact matching
 		if (!f->mutable_match()->exact())
 		  {
+		    bool found_in_list = false;
+
 		    uit=matches_str->begin();
 		    while(uit!=matches_str->end())
 		      {
-			if (token.find((*uit))==std::string::npos)
-			  {
-			    if (f->key() || f->mutable_match()->logic() == "and") {
-			      return NULL;
-			    }
-			    else if (f->mutable_match()->logic() == "or") {
-			      match = true; // has match specified, if no 'or' match condition kicks in, the data entry should be later killed
-			    }
-			    break;
-			  }
-			else
-			  {
-			    if (f->mutable_match()->logic() == "or")
-			      {
-				match = true;
-				has_or_match = true;
-				break;
-			      }
-			  }
+			if (token.find((*uit))!=std::string::npos) {
+			  found_in_list = true;
+			  break;
+			}
 			++uit;
+		      }
+		    if (!found_in_list)
+		      {
+			if (f->key() || f->mutable_match()->logic() == "and") {
+			  return NULL;
+			}
+			else if (f->mutable_match()->logic() == "or") {
+			  match = true; // has match specified, if no 'or' match condition kicks in, the data entry should be later killed
+			}
+		      }
+		    else
+		      {
+			if (f->mutable_match()->logic() == "or")
+			  {
+			    match = true;
+			    has_or_match = true;
+			  }
 		      }
 		  }
 	      }

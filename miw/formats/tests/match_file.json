@@ -21,8 +21,8 @@
 	    "match":
 	    {
 		"match_file":"../data/tests/match_file.txt",
-		"logic":"and",
-		"negative":true
+		"logic":"or",
+		"negative":false
 	    }
 	}
     ]
