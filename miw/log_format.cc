@@ -220,6 +220,11 @@ namespace miw
     std::vector<std::string> tokens;
     log_format::tokenize(line,-1,tokens,_ldef.delims(),_ldef.quotechar());
 
+    if (_ldef.nbrows() != 0 && tokens.size() != _ldef.nbrows()) {
+      LOG(ERROR) << "Error: nb rows is " << tokens.size() << " but expected number of rows was " << _ldef.nbrows() << std::endl;
+      return NULL;
+    }
+
     /*std::cerr << "tokens size: " << tokens.size() << std::endl;
     for (size_t i=0;i<tokens.size();i++)
     std::cerr << "tok: " << tokens.at(i) << std::endl;*/
